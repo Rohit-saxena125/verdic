@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verdic</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background-color: #d4e890;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      #most-recent-articles {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+      }
+      #nav {
+        background-color: black;
+        color: whitesmoke;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50px;
+        margin-bottom: 20px;
+      }
+
+      .card {
+        background-color: rgb(114, 204, 236);
+        width: 500px;
+        padding: 20px;
+        height: fit-content;
+        max-height: 800px;
+        border: 1px solid black;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .card:hover {
+        scale: 1.03;
+      }
+
+      .card img {
+        width: 100%;
+      }
+      .loading {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+
+        margin: auto;
+        margin-top: 200px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #e02727;
+        animation: spin 1s ease-in-out infinite;
+        -webkit-animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+      @-webkit-keyframes spin {
+        to {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+    </style>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+
+  <body>
+    <div id="main">
+      <div id="nav">MOST RECENT PUBLISHED NEWS</div>
+      <div id="most-recent-articles" class=""></div>
+    </div>
+    <script>
+      const id = (i) => document.getElementById(i);
+      const main = id("main");
+      const mostRecent = id("most-recent-articles");
+      const nav = id("nav");
+
+      const card_creator = (excerpt, date, title, link, image, author) => {
+        return ` <div class="card">
+    <div class="image">
+        <img src="${image}" alt="">
+    </div>
+    <div class="title"><h2>${title}</h2></div>
+    <div class="excerpt">${excerpt}</div>
+    <div class="link"> <a href="${link}">Load more about this</a></div>
+    <div class="name-date">${
+      date.split("T")[0] + " " + date.split("T")[1]
+    }</div>
+    <div class="author">Author: ${author['parsely-author']}</div>
+</div>`;
+      };
+    </script>
+    <script>
+      function resquestdog() {
+        mostRecent.classList.add("loading");
+        var cards = "";
+        axios
+          .get(
+            "https://techcrunch.com/wp-json/wp/v2/posts?per_page=20&context=embed"
+          )
+          .then((res) => {
+            res.data.map((d) => {
+              cards += card_creator(
+                d.excerpt.protected ? "" : d.excerpt.rendered,
+                d.date,
+                d.title.rendered,
+                d.canonical_url,
+                d.jetpack_featured_media_url,
+                d.parselyMeta
+              );
+            });
+            mostRecent.innerHTML = cards;
+            mostRecent.classList.remove("loading");
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+          .finally(() => (this.loading = false));
+      }
+      resquestdog();
+    </script>
+  </body>
+</html>
